@@ -1,0 +1,61 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: valuations
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./api/sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d valuations"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+
+  publisher:
+    build:
+      context: .
+      dockerfile: publisher/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${PUBLISHER_DATABASE_URL:-postgres://publisher:publisher@db:5432/valuations}
+      WORKBOOK_DIR: /workbooks
+      PYTHONPATH: /app/vendor/edgar-valuation:/app/publisher
+    volumes:
+      - workbooks:/workbooks
+      - edgar_cache:/app/vendor/edgar-valuation/cache
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+      publisher:
+        condition: service_completed_successfully
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgres://api:api@db:5432/valuations?sslmode=disable}
+      PAY_TO: ${PAY_TO}
+      FACILITATOR_URL: ${FACILITATOR_URL:-https://x402.org/facilitator}
+      NETWORK: ${NETWORK:-eip155:84532}
+      LISTEN_ADDR: ${LISTEN_ADDR:-:8080}
+    ports:
+      - "8080:8080"
+    volumes:
+      - workbooks:/workbooks
+
+volumes:
+  pgdata:
+  workbooks:
+  edgar_cache:

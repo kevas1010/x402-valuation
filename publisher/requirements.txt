@@ -1,0 +1,3 @@
+-r ../vendor/edgar-valuation/requirements.txt
+psycopg[binary]>=3.2
+python-dotenv>=1.0

@@ -1,0 +1,11 @@
+---
+description: x402 valuation API — follow SPEC.md
+alwaysApply: true
+---
+
+- Follow SPEC.md. Don't add features that aren't in it.
+- Don't change the EDGAR model's math; the publisher only wraps it.
+- Go: idiomatic, small packages (handlers, store, config), errors wrapped with context, table-driven tests.
+- Use the official x402 Go module and its Gin middleware. Check the current x402 docs before writing x402 code.
+- Parameterized queries only. Every behavior gets a test; run go test / pytest before saying done.
+- Secrets only in .env files, never committed. Testnet-only keys.
