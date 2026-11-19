@@ -11,6 +11,7 @@ publisher/.env
 output/
 workbooks/
 cache/
+work/
 *.log
 .DS_Store
 api/server

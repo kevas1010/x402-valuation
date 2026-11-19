@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from datetime import date
+from functools import partial
 from pathlib import Path
 
 from edgar.client import EdgarClient
@@ -34,8 +35,15 @@ def main() -> None:
     if cache:
         client_kw["cache_dir"] = cache
     client = EdgarClient(offline=offline, **client_kw)
-    price_loader = get_prices
     as_of = date.fromisoformat(os.environ["AS_OF"]) if os.environ.get("AS_OF") else None
+    price_kw = {}
+    if os.environ.get("PRICE_CACHE"):
+        price_kw["cache_dir"] = os.environ["PRICE_CACHE"]
+    if as_of is not None:
+        price_kw["as_of"] = as_of
+    if offline:
+        price_kw["offline"] = True
+    price_loader = partial(get_prices, **price_kw) if price_kw else get_prices
 
     conn = connect(dsn)
     try:

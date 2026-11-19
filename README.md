@@ -81,12 +81,21 @@ cd agent && pytest
 
 ## Demo (Base Sepolia)
 
-Fill this in after live runs. Leave blank until then.
+Verified locally (2026-11-18): API on `:8080`, Postgres seeded with **AEHR** and **TER** from offline EDGAR fixtures. Unpaid `GET /v1/valuations/AEHR` returns **402** with network `eip155:84532` and $0.002 (2000 USDC units). Live agent payments are blocked until the buyer wallet has Base Sepolia ETH + test USDC.
+
+Merchant (`PAY_TO`): `0x409e1fF90624a7B054E6349AC61a75d5028488C8`  
+Buyer (agent): `0x8eb73A6Ae8d33F745B160b7496c6675b02369430`
+
+Fund the **buyer** from the [CDP Base Sepolia faucet](https://portal.cdp.coinbase.com/products/faucet) (ETH and USDC), then:
+
+```bash
+python scripts/run_demo.py
+```
 
 | Question | Endpoints | USDC | Settlement tx | Answer |
 |---|---|---|---|---|
-| Compare TER and its peers on comps value | | | | |
+| Compare TER and AEHR on comps value | | | | |
 | What WACC does the model use for AEHR, and why is the DCF so far below the price? | | | | |
-| Is MSFT cheap vs GOOGL on the probability-weighted target? | | | | |
+| Is TER cheap vs AEHR on the probability-weighted target? | | | | |
 
 BaseScan: `https://sepolia.basescan.org/tx/<hash>`

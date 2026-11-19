@@ -117,34 +117,24 @@ def _to_content(blocks) -> list:
 
 
 def x402_http(base_url: str):
-    """Live x402 httpx client. Imported only when a real wallet is configured."""
+    """Live x402 requests client. Imported only when a real wallet is configured."""
     from eth_account import Account
-    from x402 import x402Client
-    from x402.http.clients import x402HttpxClient
+    from x402 import x402ClientSync
+    from x402.http.clients import x402_requests
     from x402.mechanisms.evm import EthAccountSigner
     from x402.mechanisms.evm.exact.register import register_exact_evm_client
 
     key = os.environ["EVM_PRIVATE_KEY"]
-    client = x402Client()
+    client = x402ClientSync()
     register_exact_evm_client(client, EthAccountSigner(Account.from_key(key)))
-    http = x402HttpxClient(client)
+    session = x402_requests(client)
 
     class Adapter:
         def get(self, url: str) -> tuple[int, str, dict[str, str]]:
-            resp = _run(http.get(url))
-            headers = {k: v for k, v in resp.headers.items()}
-            return resp.status_code, resp.text, headers
+            resp = session.get(url, timeout=60)
+            return resp.status_code, resp.text, dict(resp.headers)
 
     return Adapter()
-
-
-def _run(coro_or_resp):
-    import asyncio
-    import inspect
-
-    if inspect.iscoroutine(coro_or_resp):
-        return asyncio.get_event_loop().run_until_complete(coro_or_resp)
-    return coro_or_resp
 
 
 def build_from_env() -> ValuationAgent:
